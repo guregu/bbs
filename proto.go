@@ -27,12 +27,22 @@ func (r *Range) Validate() bool {
 
 // "hello" message (server -> client)
 type HelloMessage struct {
-	Command         string `json:"cmd"`
-	Name            string `json:"name"`
-	ProtocolVersion int    `json:"version"`
-	Description     string `json:"description"`
-	Options         string `json:"options"`
-	ServerVersion   string `json:"server"`
+	Command         string     `json:"cmd"`
+	Name            string     `json:"name"`
+	ProtocolVersion int        `json:"version"`
+	Description     string     `json:"description"`
+	SecureURL       string     `json:"secure,omitempty"` //https URL, if any
+	Options         []string   `json:"options,omitempty"`
+	Access          AccessInfo `json:"access"`
+	Formats         []string   `json:"format"` //formats the server accepts, the first one should be the primary one
+	ServerVersion   string     `json:"server"`
+}
+
+// guest commands are commands you can use without logging on (e.g. "list", "get") 
+// user commands require being logged in first (usually "post" and "reply")
+type AccessInfo struct {
+	GuestCommands []string `json:"guest,omitempty"`
+	UserCommands  []string `json:"user,omitempty"`
 }
 
 // "error" message (server -> client)
@@ -81,6 +91,7 @@ type GetCommand struct {
 	ThreadID string `json:"thread"`
 	Range    *Range `json:"range"`
 	Filter   string `json:"filter,omitempty"`
+	Format   string `json:"format,omitempty"`
 }
 
 // "list" command (client -> server)
@@ -118,6 +129,7 @@ type ThreadMessage struct {
 	Range    *Range     `json:"range"`
 	Filter   string     `json:"filter,omitempty"`
 	Tags     []string   `json:"tags,omitempty"`
+	Format   string     `json:"format,omitempty"`
 	Messages []*Message `json:"messages"`
 }
 

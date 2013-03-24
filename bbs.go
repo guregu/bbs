@@ -10,7 +10,7 @@ import "crypto/rand"
 
 var name string
 var version int = 0
-var options string
+var options []string
 var description string
 var server_version string
 
@@ -34,6 +34,7 @@ type BBS interface {
 var sessions = make(map[string]*Session)
 var factory func() BBS
 var addr string = ":8080"
+var hello HelloMessage
 
 func tryLogin(m *LoginCommand) *Session {
 	//try to log in 
@@ -76,8 +77,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		}
 		switch incoming.Command {
 		case "hello":
-			resp := HelloMessage{"hello", name, version, description, options, server_version}
-			w.Write(jsonify(&resp))
+			w.Write(jsonify(&hello))
 		case "login":
 			m := LoginCommand{}
 			json.Unmarshal(data, &m)
@@ -182,13 +182,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Serve(address string, path string, n string, opt string, desc string, servname string, fact func() BBS) {
+func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
 	factory = fact
 	addr = address
-	name = n
-	options = opt
-	description = desc
-	server_version = servname
+	hello = hm
 	http.HandleFunc("/", index)
 	http.HandleFunc(path, handle)
 	fmt.Println("Starting server at " + addr)

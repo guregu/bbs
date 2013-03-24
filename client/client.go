@@ -25,7 +25,7 @@ func testClient() {
 		bbsServer = os.Args[1]
 	}
 
-	fmt.Println("Running test client.")
+	fmt.Println("Running test client: " + client_version)
 	fmt.Printf("Connecting to %s...\n", bbsServer)
 	hello, _ := json.Marshal(&bbs.BBSCommand{"hello"})
 	send(hello)
@@ -121,7 +121,7 @@ func doList(exp string) {
 }
 
 func doGet(t string, r *bbs.Range, filter string) {
-	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter})
+	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text"})
 	send(get)
 }
 
@@ -138,6 +138,8 @@ func getURL(url string) string {
 }
 
 func parse(js []byte) {
+	//fmt.Println(string(js))
+
 	bbscmd := new(bbs.BBSCommand)
 	err := json.Unmarshal(js, bbscmd)
 	if err != nil {
@@ -178,7 +180,7 @@ func onError(msg *bbs.ErrorMessage) {
 }
 
 func onHello(msg *bbs.HelloMessage) {
-	prettyPrint("Connected", fmt.Sprintf("Name: %s\nDesc: %s\nOptions: %s\nVersion: %d\nServer: %s\n", msg.Name, msg.Description, msg.Options, msg.ProtocolVersion, msg.ServerVersion))
+	prettyPrint("Connected", fmt.Sprintf("Name: %s\nDesc: %s\nOptions: %v\nVersion: %d\nServer: %s\n", msg.Name, msg.Description, msg.Options, msg.ProtocolVersion, msg.ServerVersion))
 }
 
 func onWelcome(msg *bbs.WelcomeMessage) {
