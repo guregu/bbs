@@ -13,6 +13,7 @@ import "strconv"
 
 var bbsServer = "http://localhost:8080/bbs"
 var session = ""
+var lastLine = ""
 
 const client_version string = "test-client 0.1"
 
@@ -45,12 +46,14 @@ func testClient() {
 }
 
 func input(line string) {
-	if len(line) == 0 {
+	fields := strings.Fields(line)
+	if len(fields) == 0 {
 		return
 	}
-	fields := strings.Fields(line)
 
 	switch fields[0] {
+	case ".":
+		input(lastLine)
 	case "help":
 		fmt.Println("COMMANDS\n\tlogin username password\n\tnigol password username\n\tget topicID [filterID]\n\tlist [expression]\n\treply [topicID] [text]\n\tquit\n\thelp")
 	case "quit":
@@ -67,6 +70,7 @@ func input(line string) {
 			fmt.Println("usage: login username password")
 		}
 		doLogin(fields[1], fields[2])
+		lastLine = line
 	case "nigol":
 		args := strings.SplitN(line, " ", 3)
 		if strings.Contains(args[2], " ") {
@@ -77,17 +81,22 @@ func input(line string) {
 			fmt.Println("usage: nigol password username")
 		}
 		doLogin(fields[2], fields[1])
+		lastLine = line
 	case "get":
 		if len(fields) == 2 {
-			doGet(fields[1], &bbs.Range{1, 50}, "")
+			doGet(fields[1], &bbs.Range{1, 50}, "", "")
+		} else if len(fields) == 3 {
+			doGet(fields[2], nil, fields[1], "")
 		} else if len(fields) == 4 {
 			lwr, _ := strconv.Atoi(fields[2])
 			hrr, _ := strconv.Atoi(fields[3])
-			doGet(fields[1], &bbs.Range{lwr, hrr}, "")
+			doGet(fields[1], &bbs.Range{lwr, hrr}, "", "")
 		} else {
 			fmt.Println("Input error.")
-			fmt.Println("usage: get topicID [filterID]")
+			fmt.Println("usage: get topicID [lower upper filter]")
+			fmt.Println("usage: get board topicID")
 		}
+		lastLine = line
 	case "list":
 		if len(fields) == 1 {
 			doList("")
@@ -97,6 +106,7 @@ func input(line string) {
 			fmt.Println("Input error.")
 			fmt.Println("usage: list [expression]")
 		}
+		lastLine = line
 	case "reply":
 		args := strings.SplitN(line, " ", 3)
 		if len(args) < 3 {
@@ -105,6 +115,7 @@ func input(line string) {
 		} else {
 			doReply(args[1], args[2])
 		}
+		lastLine = line
 	default:
 		fmt.Println("What?")
 	}
@@ -120,8 +131,8 @@ func doList(exp string) {
 	send(list)
 }
 
-func doGet(t string, r *bbs.Range, filter string) {
-	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text"})
+func doGet(t string, r *bbs.Range, board string, filter string) {
+	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, board, r, filter, "text"})
 	send(get)
 }
 
@@ -190,8 +201,8 @@ func onWelcome(msg *bbs.WelcomeMessage) {
 
 func onMsg(msg *bbs.ThreadMessage) {
 	fmt.Printf("Thread: %s [%d] \n  Tags: %s \n", msg.Title, len(msg.Messages), strings.Join(msg.Tags, ", "))
-	for i, m := range msg.Messages {
-		fmt.Printf("#%d User: %s | Date: %s | UserID: %s \n", i+msg.Range.Start, m.Author, m.Date, m.AuthorID)
+	for _, m := range msg.Messages {
+		fmt.Printf("#%s User: %s | Date: %s | UserID: %s \n", m.ID, m.Author, m.Date, m.AuthorID)
 		fmt.Println(m.Text + "\n")
 	}
 }
