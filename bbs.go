@@ -28,6 +28,7 @@ type BBS interface {
 	IsLoggedIn() bool
 	Get(m *GetCommand) (*ThreadMessage, *ErrorMessage)
 	List(m *ListCommand) (*ListMessage, *ErrorMessage)
+	BoardList(m *ListCommand) (*BoardListMessage, *ErrorMessage)
 	Reply(m *ReplyCommand) (*OKMessage, *ErrorMessage)
 	Post(m *PostCommand) (*OKMessage, *ErrorMessage)
 }
@@ -125,11 +126,20 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "list":
 			m := ListCommand{}
 			json.Unmarshal(data, &m)
-			success, e := bbs.List(&m)
-			if success != nil {
-				w.Write(jsonify(success))
-			} else {
-				w.Write(jsonify(e))
+			if m.Type == "" || m.Type == "thread" {
+				success, e := bbs.List(&m)
+				if success != nil {
+					w.Write(jsonify(success))
+				} else {
+					w.Write(jsonify(e))
+				}
+			} else if m.Type == "board" {
+				success, e := bbs.BoardList(&m)
+				if success != nil {
+					w.Write(jsonify(success))
+				} else {
+					w.Write(jsonify(e))
+				}
 			}
 		case "reply":
 			m := ReplyCommand{}

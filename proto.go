@@ -35,7 +35,7 @@ type HelloMessage struct {
 	Command         string     `json:"cmd"`
 	Name            string     `json:"name"`
 	ProtocolVersion int        `json:"version"`
-	Description     string     `json:"description"`
+	Description     string     `json:"desc"`
 	SecureURL       string     `json:"secure,omitempty"` //https URL, if any
 	Options         []string   `json:"options,omitempty"`
 	Access          AccessInfo `json:"access"`
@@ -162,12 +162,25 @@ type Message struct {
 	ThumbnailURL string `json:"thumb,omitempty"`      //option: "imageboard"
 }
 
-// "list" message (server -> client)
+type TypedMessage struct {
+	Command string `json:"cmd"`
+	Type    string `json:"type"`
+}
+
+// "list" message where type = "thread" (server -> client)
 type ListMessage struct {
 	Command string           `json:"cmd"`
 	Type    string           `json:"type"`
-	Query   string           `json:"query"`
+	Query   string           `json:"query,omitempty"`
 	Threads []*ThreadListing `json:"threads"`
+}
+
+// "list" message where type = "board" (server -> client)
+type BoardListMessage struct {
+	Command string          `json:"cmd"`
+	Type    string          `json:"type"`
+	Query   string          `json:"query,omitempty"`
+	Boards  []*BoardListing `json:"boards"`
 }
 
 // format for threads in "list"
@@ -181,4 +194,13 @@ type ThreadListing struct {
 	Tags         []string `json:"tags,omitempty"`  //option: "tags"
 	PictureURL   string   `json:"img,omitempty"`   //option: "imageboard"
 	ThumbnailURL string   `json:"thumb,omitempty"` //option: "imageboard"
+}
+
+// format for boards in "list"
+type BoardListing struct {
+	ID          string `json:"id"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"desc,omitempty"`
+	ThreadCount int    `json:"threads,omitempty"`
+	PostCount   int    `json:"posts,omitempty"`
 }

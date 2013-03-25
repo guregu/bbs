@@ -55,7 +55,7 @@ func input(line string) {
 	case ".":
 		input(lastLine)
 	case "help":
-		fmt.Println("COMMANDS\n\tlogin username password\n\tnigol password username\n\tget topicID [filterID]\n\tlist [expression]\n\treply [topicID] [text]\n\tquit\n\thelp")
+		fmt.Println("COMMANDS\n\tlogin username password\n\tnigol password username\n\tget topicID [filterID]\n\tboards\n\tlist [expression]\n\treply [topicID] [text]\n\tquit\n\thelp\n\t. (repeat last command)")
 	case "quit":
 		os.Exit(0)
 	case "exit":
@@ -107,6 +107,9 @@ func input(line string) {
 			fmt.Println("usage: list [expression]")
 		}
 		lastLine = line
+	case "boards":
+		doListBoards()
+		lastLine = line
 	case "reply":
 		args := strings.SplitN(line, " ", 3)
 		if len(args) < 3 {
@@ -131,6 +134,11 @@ func doList(exp string) {
 	send(list)
 }
 
+func doListBoards() {
+	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "board", ""})
+	send(list)
+}
+
 func doGet(t string, r *bbs.Range, board string, filter string) {
 	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, board, r, filter, "text"})
 	send(get)
@@ -149,7 +157,7 @@ func getURL(url string) string {
 }
 
 func parse(js []byte) {
-	//fmt.Println(string(js))
+	fmt.Println(string(js))
 
 	bbscmd := new(bbs.BBSCommand)
 	err := json.Unmarshal(js, bbscmd)
@@ -180,9 +188,17 @@ func parse(js []byte) {
 		json.Unmarshal(js, &m)
 		fmt.Println("(OK: " + m.ReplyTo + ") " + m.Message)
 	case "list":
-		m := bbs.ListMessage{}
-		json.Unmarshal(js, &m)
-		onList(&m)
+		t := bbs.TypedMessage{}
+		json.Unmarshal(js, &t)
+		if t.Type == "thread" {
+			m := bbs.ListMessage{}
+			json.Unmarshal(js, &m)
+			onList(&m)
+		} else if t.Type == "board" {
+			m := bbs.BoardListMessage{}
+			json.Unmarshal(js, &m)
+			onBoardList(&m)
+		}
 	}
 }
 
@@ -211,6 +227,16 @@ func onList(msg *bbs.ListMessage) {
 	prettyPrint("Threads", msg.Query)
 	for _, t := range msg.Threads {
 		fmt.Printf("#%s [%s] %s | %d posts | %s | %s\n", t.ID, t.Author, t.Title, t.PostCount, t.Date, strings.Join(t.Tags, ", "))
+	}
+}
+
+func onBoardList(msg *bbs.BoardListMessage) {
+	prettyPrint("Boards", msg.Query)
+	for i, b := range msg.Boards {
+		fmt.Printf("#%d (%s) %s\n", i, b.ID, b.Name)
+		if b.Description != "" {
+			fmt.Println(b.Description)
+		}
 	}
 }
 
