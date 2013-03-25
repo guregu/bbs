@@ -8,6 +8,11 @@ type BBSCommand struct {
 	Command string `json:"cmd"`
 }
 
+type UserCommand struct {
+	Command string `json:"cmd"`
+	Session string `json:"session"`
+}
+
 //From start to end inclusive, starting from 1. 
 type Range struct {
 	Start int `json:"start"`
@@ -74,7 +79,7 @@ type LoginCommand struct {
 // "welcome" message (server -> client)
 type WelcomeMessage struct {
 	Command  string `json:"cmd"`
-	Username string `json:"username"`
+	Username string `json:"username,omitempty"` //omit for option 'anon'
 	Session  string `json:"session"`
 }
 
@@ -89,8 +94,9 @@ type GetCommand struct {
 	Command  string `json:"cmd"`
 	Session  string `json:"session,omitempty"`
 	ThreadID string `json:"thread"`
+	Board    string `json:"board,omitempty"` //option: "tags"
 	Range    *Range `json:"range"`
-	Filter   string `json:"filter,omitempty"`
+	Filter   string `json:"filter,omitempty"` //option: "filter"
 	Format   string `json:"format,omitempty"`
 }
 
@@ -99,7 +105,7 @@ type ListCommand struct {
 	Command string `json:"cmd"`
 	Session string `json:"session,omitempty"`
 	Type    string `json:"type"`
-	Query   string `json:"query"`
+	Query   string `json:"query"` //board for "boards", tag expression for "tags" (like "Dogs+Pizza-Anime")
 }
 
 // "reply" command (client -> server)
@@ -107,6 +113,7 @@ type ReplyCommand struct {
 	Command string `json:"cmd"`
 	Session string `json:"session,omitempty"`
 	To      string `json:"to"`
+	Board   string `json:"board,omitempty"` //option: "boards"
 	Text    string `json:"body"`
 	Format  string `json:"format,omitempty"`
 }
@@ -118,7 +125,8 @@ type PostCommand struct {
 	Title   string   `json:"title"`
 	Text    string   `json:"body"`
 	Format  string   `json:"format,omitempty"`
-	Tags    []string `json:"tags,omitempty"`
+	Board   string   `json:"board,omitempty"` //option: "boards"
+	Tags    []string `json:"tags,omitempty"`  //option: "tags"
 }
 
 // "msg" message (server -> client) [response to "get"]
@@ -126,9 +134,10 @@ type ThreadMessage struct {
 	Command  string     `json:"cmd"`
 	ID       string     `json:"id"`
 	Title    string     `json:"title"`
-	Range    *Range     `json:"range"`
-	Filter   string     `json:"filter,omitempty"`
-	Tags     []string   `json:"tags,omitempty"`
+	Range    *Range     `json:"range,omitempty"`
+	Filter   string     `json:"filter,omitempty"` //option: "filter"
+	Board    string     `json:"board,omitempty"`  //option: "boards"
+	Tags     []string   `json:"tags,omitempty"`   //option: "tags"
 	Format   string     `json:"format,omitempty"`
 	Messages []*Message `json:"messages"`
 }
@@ -142,15 +151,15 @@ func (t *ThreadMessage) Size() int {
 
 // format for posts used in "msg"
 type Message struct {
-	ID                  string `json:"id"`
-	Author              string `json:"user"`
-	AuthorID            string `json:"user_id"`
-	Date                string `json:"date"`
-	Text                string `json:"body"`
-	AuthorTitle         string `json:"user_title,omitempty"`
-	AvatarURL           string `json:"avatar,omitempty"`
-	PictureURL          string `json:"img,omitempty"`
-	PictureThumbnailURL string `json:"thumb,omitempty"`
+	ID           string `json:"id"`
+	Author       string `json:"user"`
+	AuthorID     string `json:"user_id"`
+	Date         string `json:"date"`
+	Text         string `json:"body"`
+	AuthorTitle  string `json:"user_title,omitempty"` //option: "usertitles"
+	AvatarURL    string `json:"avatar,omitempty"`     //option: "avatars"
+	PictureURL   string `json:"img,omitempty"`        //option: "imageboard"
+	ThumbnailURL string `json:"thumb,omitempty"`      //option: "imageboard"
 }
 
 // "list" message (server -> client)
@@ -163,11 +172,13 @@ type ListMessage struct {
 
 // format for threads in "list"
 type ThreadListing struct {
-	ID        string   `json:"id"`
-	Title     string   `json:"title"`
-	Author    string   `json:"user"`
-	AuthorID  string   `json:"user_id"`
-	Date      string   `json:"date"`
-	PostCount int      `json:"posts"`
-	Tags      []string `json:"tags,omitempty"`
+	ID           string   `json:"id"`
+	Title        string   `json:"title"`
+	Author       string   `json:"user"`
+	AuthorID     string   `json:"user_id"`
+	Date         string   `json:"date"`
+	PostCount    int      `json:"posts"`
+	Tags         []string `json:"tags,omitempty"`  //option: "tags"
+	PictureURL   string   `json:"img,omitempty"`   //option: "imageboard"
+	ThumbnailURL string   `json:"thumb,omitempty"` //option: "imageboard"
 }
