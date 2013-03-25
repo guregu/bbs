@@ -7,6 +7,7 @@ import "encoding/json"
 import "io/ioutil"
 import "time"
 import "crypto/rand"
+import "sync"
 
 var name string
 var version int = 0
@@ -32,6 +33,7 @@ type BBS interface {
 }
 
 var sessions = make(map[string]*Session)
+var sessionMutex = &sync.RWMutex{}
 var factory func() BBS
 var addr string = ":8080"
 var hello HelloMessage
@@ -54,7 +56,10 @@ func tryLogin(m *LoginCommand) *Session {
 		}
 		id := fmt.Sprintf("%x", b)
 		sesh := Session{id, m.Username, board, time.Now()}
+
+		sessionMutex.Lock()
 		sessions[id] = &sesh
+		sessionMutex.Unlock()
 
 		return &sesh
 	}
@@ -63,7 +68,9 @@ func tryLogin(m *LoginCommand) *Session {
 }
 
 func logout(session string) {
+	sessionMutex.Lock()
 	delete(sessions, session)
+	sessionMutex.Unlock()
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +172,8 @@ func contains(a []string, s string) bool {
 }
 
 func getSession(sesh string) *Session {
+	sessionMutex.RLock()
+	defer sessionMutex.RUnlock()
 	s, ok := sessions[sesh]
 	if !ok {
 		return nil
