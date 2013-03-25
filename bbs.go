@@ -36,6 +36,10 @@ var factory func() BBS
 var addr string = ":8080"
 var hello HelloMessage
 
+var userCommands []string
+var guestCommands []string
+var defaultBBS BBS
+
 func tryLogin(m *LoginCommand) *Session {
 	//try to log in 
 	var board BBS
@@ -69,11 +73,26 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		index(w, r)
 	case "POST":
 		data, _ := ioutil.ReadAll(r.Body)
-		incoming := BBSCommand{}
+		incoming := UserCommand{}
 		err := json.Unmarshal(data, &incoming)
 		if err != nil {
 			fmt.Println("JSON Parsing Error!! " + string(data))
 			return
+		}
+		var bbs BBS
+		var sesh *Session
+		if incoming.Session != "" {
+			sesh = getSession(incoming.Session)
+			bbs = sesh.BBS
+		} else {
+			bbs = defaultBBS
+		}
+		if contains(userCommands, incoming.Command) {
+			if sesh == nil {
+				// a guest tried to use a user command
+				w.Write(jsonify(SessionErrorMessage))
+				return
+			}
 		}
 		switch incoming.Command {
 		case "hello":
@@ -81,21 +100,16 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "login":
 			m := LoginCommand{}
 			json.Unmarshal(data, &m)
-			sesh := tryLogin(&m)
-			if sesh != nil {
-				w.Write(jsonify(&WelcomeMessage{"welcome", sesh.UserID, sesh.SessionID}))
+			newsesh := tryLogin(&m)
+			if newsesh != nil {
+				w.Write(jsonify(&WelcomeMessage{"welcome", newsesh.UserID, newsesh.SessionID}))
 			} else {
 				w.Write(jsonify(&ErrorMessage{"error", "login", "Can't log in!"}))
 			}
 		case "get":
 			m := GetCommand{}
 			json.Unmarshal(data, &m)
-			sesh := getSession(m.Session)
-			if sesh == nil {
-				w.Write(jsonify(SessionErrorMessage))
-				return
-			}
-			success, e := sesh.BBS.Get(&m)
+			success, e := bbs.Get(&m)
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
@@ -104,12 +118,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "list":
 			m := ListCommand{}
 			json.Unmarshal(data, &m)
-			sesh := getSession(m.Session)
-			if sesh == nil {
-				w.Write(jsonify(SessionErrorMessage))
-				return
-			}
-			success, e := sesh.BBS.List(&m)
+			success, e := bbs.List(&m)
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
@@ -118,12 +127,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "reply":
 			m := ReplyCommand{}
 			json.Unmarshal(data, &m)
-			sesh := getSession(m.Session)
-			if sesh == nil {
-				w.Write(jsonify(SessionErrorMessage))
-				return
-			}
-			success, e := sesh.BBS.Reply(&m)
+			success, e := bbs.Reply(&m)
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
@@ -132,12 +136,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "post":
 			m := PostCommand{}
 			json.Unmarshal(data, &m)
-			sesh := getSession(m.Session)
-			if sesh == nil {
-				w.Write(jsonify(SessionErrorMessage))
-				return
-			}
-			success, e := sesh.BBS.Post(&m)
+			success, e := bbs.Post(&m)
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
@@ -154,6 +153,15 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	default:
 		fmt.Println("Weird method used.")
 	}
+}
+
+func contains(a []string, s string) bool {
+	for _, c := range a {
+		if c == s {
+			return true
+		}
+	}
+	return false
 }
 
 func getSession(sesh string) *Session {
@@ -186,6 +194,9 @@ func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
 	factory = fact
 	addr = address
 	hello = hm
+	userCommands = hm.Access.UserCommands
+	guestCommands = hm.Access.GuestCommands
+	defaultBBS = fact()
 	http.HandleFunc("/", index)
 	http.HandleFunc(path, handle)
 	fmt.Println("Starting server at " + addr)
