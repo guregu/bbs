@@ -157,8 +157,6 @@ func getURL(url string) string {
 }
 
 func parse(js []byte) {
-	fmt.Println(string(js))
-
 	bbscmd := new(bbs.BBSCommand)
 	err := json.Unmarshal(js, bbscmd)
 	if err != nil {
