@@ -218,6 +218,6 @@ func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
 	defaultBBS = fact()
 	http.HandleFunc("/", index)
 	http.HandleFunc(path, handle)
-	fmt.Println("Starting server at " + addr)
+	fmt.Printf("Starting server %s at %s%s\n", hm.Name, addr, path)
 	http.ListenAndServe(addr, nil)
 }
