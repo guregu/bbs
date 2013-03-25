@@ -113,7 +113,7 @@ func input(line string) {
 			fmt.Println("Input error.")
 			fmt.Println("usage: reply topicID text...")
 		} else {
-			doReply(args[1], args[2])
+			doReply(args[1], strings.Trim(args[2], " \n"))
 		}
 		lastLine = line
 	default:
@@ -137,7 +137,7 @@ func doGet(t string, r *bbs.Range, board string, filter string) {
 }
 
 func doReply(id, text string) {
-	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, text, "html"})
+	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, "", text, "html"})
 	send(reply)
 }
 
