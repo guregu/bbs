@@ -135,6 +135,7 @@ type ThreadMessage struct {
 	ID       string     `json:"id"`
 	Title    string     `json:"title"`
 	Range    *Range     `json:"range,omitempty"`
+	Closed   bool       `json:"closed,omitempty"`
 	Filter   string     `json:"filter,omitempty"` //option: "filter"
 	Board    string     `json:"board,omitempty"`  //option: "boards"
 	Tags     []string   `json:"tags,omitempty"`   //option: "tags"
@@ -190,7 +191,10 @@ type ThreadListing struct {
 	Author       string   `json:"user"`
 	AuthorID     string   `json:"user_id"`
 	Date         string   `json:"date"`
-	PostCount    int      `json:"posts"`
+	PostCount    int      `json:"posts,omitempty"`
+	UnreadPosts  int      `json:"unread_posts"`
+	Sticky       bool     `json:"sticky"`          //a sticky (aka pinned) topic
+	Closed       bool     `json:"closed"`          //a closed (aka locked) topic
 	Tags         []string `json:"tags,omitempty"`  //option: "tags"
 	PictureURL   string   `json:"img,omitempty"`   //option: "imageboard"
 	ThumbnailURL string   `json:"thumb,omitempty"` //option: "imageboard"

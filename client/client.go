@@ -215,6 +215,9 @@ func onWelcome(msg *bbs.WelcomeMessage) {
 
 func onMsg(msg *bbs.ThreadMessage) {
 	fmt.Printf("Thread: %s [%d] \n  Tags: %s \n", msg.Title, len(msg.Messages), strings.Join(msg.Tags, ", "))
+	if msg.Closed {
+		fmt.Println("(Closed)")
+	}
 	for _, m := range msg.Messages {
 		fmt.Printf("#%s User: %s | Date: %s | UserID: %s \n", m.ID, m.Author, m.Date, m.AuthorID)
 		fmt.Println(m.Text + "\n")
@@ -224,7 +227,19 @@ func onMsg(msg *bbs.ThreadMessage) {
 func onList(msg *bbs.ListMessage) {
 	prettyPrint("Threads", msg.Query)
 	for _, t := range msg.Threads {
-		fmt.Printf("#%s [%s] %s | %d posts | %s | %s\n", t.ID, t.Author, t.Title, t.PostCount, t.Date, strings.Join(t.Tags, ", "))
+		info := ""
+		if t.Closed && t.Sticky {
+			info = "(Sticky, Closed)"
+		} else if t.Closed {
+			info = "(Closed)"
+		} else if t.Sticky {
+			info = "(Sticky)"
+		}
+		newposts := " "
+		if t.UnreadPosts > 0 {
+			newposts = fmt.Sprintf(" (unread: %d) ", t.UnreadPosts)
+		}
+		fmt.Printf("#%s [%s] %s %s | %d posts%s| %s | %s\n", t.ID, t.Author, info, t.Title, t.PostCount, newposts, t.Date, strings.Join(t.Tags, ", "))
 	}
 }
 
