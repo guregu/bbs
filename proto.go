@@ -157,6 +157,7 @@ type Message struct {
 	AuthorID     string `json:"user_id"`
 	Date         string `json:"date"`
 	Text         string `json:"body"`
+	Signature    string `json:"sig"`
 	AuthorTitle  string `json:"user_title,omitempty"` //option: "usertitles"
 	AvatarURL    string `json:"avatar,omitempty"`     //option: "avatars"
 	PictureURL   string `json:"img,omitempty"`        //option: "imageboard"
