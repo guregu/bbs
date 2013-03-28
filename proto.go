@@ -64,7 +64,7 @@ var SessionErrorMessage *ErrorMessage = &ErrorMessage{"error", "session", "Inval
 type OKMessage struct {
 	Command string `json:"cmd"`
 	ReplyTo string `json:"wrt"`
-	Message string `json:"msg,omitempty"`
+	Result  string `json:"result,omitempty"`
 }
 
 // "login" command (client -> server)
@@ -73,7 +73,6 @@ type LoginCommand struct {
 	Username        string `json:"username"`
 	Password        string `json:"password"`
 	ProtocolVersion int    `json:"version"`
-	ClientVersion   string `json:"client"`
 }
 
 // "welcome" message (server -> client)
@@ -93,9 +92,9 @@ type LogoutCommand struct {
 type GetCommand struct {
 	Command  string `json:"cmd"`
 	Session  string `json:"session,omitempty"`
-	ThreadID string `json:"thread"`
-	Board    string `json:"board,omitempty"` //option: "tags"
-	Range    *Range `json:"range"`
+	ThreadID string `json:"id"`
+	Board    string `json:"board,omitempty"`  //option: "tags"
+	Range    *Range `json:"range"`            //option: "range"
 	Filter   string `json:"filter,omitempty"` //option: "filter"
 	Format   string `json:"format,omitempty"`
 }
@@ -133,7 +132,7 @@ type PostCommand struct {
 type ThreadMessage struct {
 	Command  string     `json:"cmd"`
 	ID       string     `json:"id"`
-	Title    string     `json:"title"`
+	Title    string     `json:"title,omitempty"`
 	Range    *Range     `json:"range,omitempty"`
 	Closed   bool       `json:"closed,omitempty"`
 	Filter   string     `json:"filter,omitempty"` //option: "filter"
@@ -141,6 +140,7 @@ type ThreadMessage struct {
 	Tags     []string   `json:"tags,omitempty"`   //option: "tags"
 	Format   string     `json:"format,omitempty"`
 	Messages []*Message `json:"messages"`
+	More     bool       `json:"more,omitempty"`
 }
 
 func (t *ThreadMessage) Size() int {
