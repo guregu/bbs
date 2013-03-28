@@ -14,6 +14,7 @@ import "strconv"
 var bbsServer = "http://localhost:8080/bbs"
 var session = ""
 var lastLine = ""
+var verbose = true
 
 const client_version string = "test-client 0.1"
 
@@ -125,7 +126,7 @@ func input(line string) {
 }
 
 func doLogin(u, pw string) {
-	login, _ := json.Marshal(&bbs.LoginCommand{"login", u, pw, 0, client_version})
+	login, _ := json.Marshal(&bbs.LoginCommand{"login", u, pw, 0})
 	send(login)
 }
 
@@ -157,6 +158,11 @@ func getURL(url string) string {
 }
 
 func parse(js []byte) {
+	if verbose {
+		fmt.Println("server -> client")
+		fmt.Println(string(js))
+	}
+
 	bbscmd := new(bbs.BBSCommand)
 	err := json.Unmarshal(js, bbscmd)
 	if err != nil {
@@ -254,6 +260,10 @@ func onBoardList(msg *bbs.BoardListMessage) {
 }
 
 func send(js []byte) {
+	if verbose {
+		fmt.Println("client -> server")
+		fmt.Println(string(js))
+	}
 	resp, err := http.Post(bbsServer, "application/json", bytes.NewReader(js))
 	if err != nil {
 		fmt.Printf("Could not send data. %v\n", err)
