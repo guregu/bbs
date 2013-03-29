@@ -16,7 +16,7 @@ var session = ""
 var lastLine = ""
 var verbose = true
 
-const client_version string = "test-client 0.1"
+const client_version string = "test-client 0.1" //TODO: use this in User-Agent
 
 func main() {
 	testClient()
@@ -85,13 +85,11 @@ func input(line string) {
 		lastLine = line
 	case "get":
 		if len(fields) == 2 {
-			doGet(fields[1], &bbs.Range{1, 50}, "", "")
-		} else if len(fields) == 3 {
-			doGet(fields[2], nil, fields[1], "")
+			doGet(fields[1], &bbs.Range{1, 50}, "")
 		} else if len(fields) == 4 {
 			lwr, _ := strconv.Atoi(fields[2])
 			hrr, _ := strconv.Atoi(fields[3])
-			doGet(fields[1], &bbs.Range{lwr, hrr}, "", "")
+			doGet(fields[1], &bbs.Range{lwr, hrr}, "")
 		} else {
 			fmt.Println("Input error.")
 			fmt.Println("usage: get topicID [lower upper filter]")
@@ -140,13 +138,13 @@ func doListBoards() {
 	send(list)
 }
 
-func doGet(t string, r *bbs.Range, board string, filter string) {
-	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, board, r, filter, "text"})
+func doGet(t string, r *bbs.Range, filter string) {
+	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text"})
 	send(get)
 }
 
 func doReply(id, text string) {
-	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, "", text, "html"})
+	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, text, "html"})
 	send(reply)
 }
 
@@ -190,7 +188,7 @@ func parse(js []byte) {
 	case "ok":
 		m := bbs.OKMessage{}
 		json.Unmarshal(js, &m)
-		fmt.Println("(OK: " + m.ReplyTo + ") " + m.Message)
+		fmt.Println("(OK: " + m.ReplyTo + ") " + m.Result)
 	case "list":
 		t := bbs.TypedMessage{}
 		json.Unmarshal(js, &t)
