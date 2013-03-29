@@ -40,6 +40,7 @@ type HelloMessage struct {
 	Options         []string   `json:"options,omitempty"`
 	Access          AccessInfo `json:"access"`
 	Formats         []string   `json:"format"` //formats the server accepts, the first one should be the primary one
+	Lists           []string   `json:"lists"`
 	ServerVersion   string     `json:"server"`
 }
 
