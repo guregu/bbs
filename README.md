@@ -230,8 +230,8 @@ Requests a log out. Currently, there is no confirmation of logging out actually 
 }
 ```
 
-### Uses
-When you want to log out. Servers should expire people's sessions after inactivity regardless. 
+### Notes
+Servers should expire people's sessions after inactivity regardless. 
 
 
 ## "ok" command (server → client)
@@ -251,7 +251,7 @@ This command is sent to clients as a response to a successful command. Many comm
 }
 ```
 
-### Uses
+### Notes
 This command is sent as a response to many different client commands to indicate success. For "post" and "reply", `result` should be the new thread ID or post ID, but it is allowed to be missing.
 
 ## "get" command (client → server)
@@ -286,7 +286,7 @@ This command is used to request messages from the server. It is used for viewing
 }
 ```
 
-### Uses
+### Notes
 For servers that don't support the "range" option, this command will get every post. For servers that do, it will get the default range if `range` is omitted. 
 
 
@@ -373,7 +373,7 @@ This command is used to send messages (posts) to the client. It is used to displ
 }
 ```
 
-### Uses
+### Notes
 This is the meat of your BBS. You can omit nearly everything. I'm leaning towards names being required. Even on anonymous boards, you can set the name as "Anonymous" for everyone. 
 There is no way to request single posts right now, without using `range`. 
 
