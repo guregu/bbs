@@ -93,7 +93,6 @@ type GetCommand struct {
 	Command  string `json:"cmd"`
 	Session  string `json:"session,omitempty"`
 	ThreadID string `json:"id"`
-	Board    string `json:"board,omitempty"`  //option: "tags"
 	Range    *Range `json:"range"`            //option: "range"
 	Filter   string `json:"filter,omitempty"` //option: "filter"
 	Format   string `json:"format,omitempty"`
@@ -112,7 +111,6 @@ type ReplyCommand struct {
 	Command string `json:"cmd"`
 	Session string `json:"session,omitempty"`
 	To      string `json:"to"`
-	Board   string `json:"board,omitempty"` //option: "boards"
 	Text    string `json:"body"`
 	Format  string `json:"format,omitempty"`
 }
@@ -152,16 +150,17 @@ func (t *ThreadMessage) Size() int {
 
 // format for posts used in "msg"
 type Message struct {
-	ID           string `json:"id"`
-	Author       string `json:"user"`
-	AuthorID     string `json:"user_id"`
-	Date         string `json:"date"`
-	Text         string `json:"body"`
-	Signature    string `json:"sig"`
-	AuthorTitle  string `json:"user_title,omitempty"` //option: "usertitles"
-	AvatarURL    string `json:"avatar,omitempty"`     //option: "avatars"
-	PictureURL   string `json:"img,omitempty"`        //option: "imageboard"
-	ThumbnailURL string `json:"thumb,omitempty"`      //option: "imageboard"
+	ID                 string `json:"id"`
+	Author             string `json:"user"`
+	AuthorID           string `json:"user_id,omitempty"`
+	Date               string `json:"date,omitempty"`
+	Text               string `json:"body"`
+	Signature          string `json:"sig,omitempty"`
+	AuthorTitle        string `json:"user_title,omitempty"`   //option: "usertitles"
+	AvatarURL          string `json:"avatar,omitempty"`       //option: "avatars"
+	AvatarThumbnailURL string `json:"avatar_thumb,omitempty"` //option: "avatars"
+	PictureURL         string `json:"img,omitempty"`          //option: "imageboard"
+	ThumbnailURL       string `json:"thumb,omitempty"`        //option: "imageboard"
 }
 
 type TypedMessage struct {
@@ -189,16 +188,16 @@ type BoardListMessage struct {
 type ThreadListing struct {
 	ID           string   `json:"id"`
 	Title        string   `json:"title"`
-	Author       string   `json:"user"`
-	AuthorID     string   `json:"user_id"`
-	Date         string   `json:"date"`
+	Author       string   `json:"user,omitempty"`
+	AuthorID     string   `json:"user_id,omitempty"`
+	Date         string   `json:"date,omitempty"`
 	PostCount    int      `json:"posts,omitempty"`
-	UnreadPosts  int      `json:"unread_posts"`
-	Sticky       bool     `json:"sticky"`          //a sticky (aka pinned) topic
-	Closed       bool     `json:"closed"`          //a closed (aka locked) topic
-	Tags         []string `json:"tags,omitempty"`  //option: "tags"
-	PictureURL   string   `json:"img,omitempty"`   //option: "imageboard"
-	ThumbnailURL string   `json:"thumb,omitempty"` //option: "imageboard"
+	UnreadPosts  int      `json:"unread_posts,omitempty"`
+	Sticky       bool     `json:"sticky,omitempty"` //a sticky (aka pinned) topic
+	Closed       bool     `json:"closed,omitempty"` //a closed (aka locked) topic
+	Tags         []string `json:"tags,omitempty"`   //option: "tags"
+	PictureURL   string   `json:"img,omitempty"`    //option: "imageboard"
+	ThumbnailURL string   `json:"thumb,omitempty"`  //option: "imageboard"
 }
 
 // format for boards in "list"
@@ -208,4 +207,5 @@ type BoardListing struct {
 	Description string `json:"desc,omitempty"`
 	ThreadCount int    `json:"threads,omitempty"`
 	PostCount   int    `json:"posts,omitempty"`
+	Date        string `json:"date"`
 }
