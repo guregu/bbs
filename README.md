@@ -49,13 +49,13 @@ Where [command name] is one of the following commands:
 
 | Client commands | Server commands |
 | --------------- | --------------- |
-| hello           | hello           |
-| login           | welcome         |
-| logout          | msg             |
-| get             | list            |
-| list            | ok              |
-| post            | error           |
-| reply           |                 |
+| [hello](#hello-command-client--server) | [hello](#hello-command-server--client) |
+| [login](#login-command-client--server) | [welcome](#welcome-command-server--client) |
+| [logout](#logout-command-client--server) | [msg](#msg-command-server--client) |
+| [get](#get-command-client--server) | [list](#list-command-server--client) |
+| [list](#list-command-client--server) | [ok](#ok-command-server--client) |
+| [post](#post-command-client--server) | [error](#error-command-server--client) |
+| [reply](#reply-command-client--server) | |
 
 The rest of the object's contents depend on what kind of command it is.
 Since this is an extensible protocol, *clients should silently ignore fields they don't understand*.
@@ -65,13 +65,13 @@ Request Flow
 ------------
 | Client request command | Possible server responses |
 | ---------------------- | ------------------------- |
-| hello 				 | hello				     |
-| login					 | welcome, error		     |
-| logout				 | ok					     |
-| get  					 | msg, error				 |
-| list					 | list, error				 |
-| post 					 | ok, error				 |
-| reply 				 | ok, error				 |
+| [hello](#hello-command-client--server) | [hello](#hello-command-server--client) |
+| [login](#login-command-client--server) | [welcome](#welcome-command-server--client), [error](#error-command-server--client) |
+| [logout](#logout-command-client--server) | [ok](#ok-command-server--client) |
+| [get](#get-command-client--server) | [msg](#msg-command-server--client), [error](#error-command-server--client) |
+| [list](#list-command-client--server) | [list](#list-command-server--client), [error](#error-command-server--client) |
+| [post](#post-command-client--server) | [ok](#ok-command-server--client), [error](#error-command-server--client) |
+| [reply](#reply-command-client--server) | [ok](#ok-command-server--client), [error](#error-command-server--client) |
 
 
 ## "hello" command (client → server)
