@@ -129,12 +129,12 @@ func doLogin(u, pw string) {
 }
 
 func doList(exp string) {
-	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "thread", exp})
+	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "thread", exp, ""})
 	send(list)
 }
 
 func doListBoards() {
-	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "board", ""})
+	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "board", "", ""})
 	send(list)
 }
 

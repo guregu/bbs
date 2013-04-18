@@ -42,6 +42,9 @@ type HelloMessage struct {
 	Formats         []string   `json:"format"` //formats the server accepts, the first one should be the primary one
 	Lists           []string   `json:"lists"`
 	ServerVersion   string     `json:"server"`
+	IconURL         string     `json:"icon"`
+	//for option "range"
+	DefaultRange *Range `json:"default_range,omitempty"`
 }
 
 // guest commands are commands you can use without logging on (e.g. "list", "get") 
@@ -105,6 +108,7 @@ type ListCommand struct {
 	Session string `json:"session,omitempty"`
 	Type    string `json:"type"`
 	Query   string `json:"query"` //board for "boards", tag expression for "tags" (like "Dogs+Pizza-Anime")
+	Token   string `json:"token,omitempty"`
 }
 
 // "reply" command (client -> server)
@@ -199,6 +203,7 @@ type ThreadListing struct {
 	Tags         []string `json:"tags,omitempty"`   //option: "tags"
 	PictureURL   string   `json:"img,omitempty"`    //option: "imageboard"
 	ThumbnailURL string   `json:"thumb,omitempty"`  //option: "imageboard"
+	NextToken    string   `json:"next,omitempty"`
 }
 
 // format for boards in "list"
@@ -208,5 +213,5 @@ type BoardListing struct {
 	Description string `json:"desc,omitempty"`
 	ThreadCount int    `json:"threads,omitempty"`
 	PostCount   int    `json:"posts,omitempty"`
-	Date        string `json:"date"`
+	Date        string `json:"date,omitempty"`
 }

@@ -91,13 +91,18 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		var sesh *Session
 		if incoming.Session != "" {
 			sesh = getSession(incoming.Session)
-			bbs = sesh.BBS
+			if sesh != nil {
+				bbs = sesh.BBS
+			} else {
+				bbs = defaultBBS
+			}
 		} else {
 			bbs = defaultBBS
 		}
 		if contains(userCommands, incoming.Command) {
 			if sesh == nil {
 				// a guest tried to use a user command
+				w.WriteHeader(401) //401 Unauthorized
 				w.Write(jsonify(SessionErrorMessage))
 				return
 			}
@@ -112,6 +117,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if newsesh != nil {
 				w.Write(jsonify(&WelcomeMessage{"welcome", newsesh.UserID, newsesh.SessionID}))
 			} else {
+				w.WriteHeader(401) //401 Unauthorized
 				w.Write(jsonify(&ErrorMessage{"error", "login", "Can't log in!"}))
 			}
 		case "get":
@@ -121,6 +127,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
+				w.WriteHeader(404) //404 Not Found
 				w.Write(jsonify(e))
 			}
 		case "list":
@@ -131,6 +138,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 				if success != nil {
 					w.Write(jsonify(success))
 				} else {
+					w.WriteHeader(404) //404 Not Found
 					w.Write(jsonify(e))
 				}
 			} else if m.Type == "board" {
@@ -138,6 +146,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 				if success != nil {
 					w.Write(jsonify(success))
 				} else {
+					w.WriteHeader(404) //404 Not Found
 					w.Write(jsonify(e))
 				}
 			}
@@ -148,6 +157,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
+				w.WriteHeader(400) //404 Bad Request
+				//TODO: sometimes should be 403 Forbidden
 				w.Write(jsonify(e))
 			}
 		case "post":
@@ -157,6 +168,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
+				w.WriteHeader(400) //404 Bad Request
 				w.Write(jsonify(e))
 			}
 		case "logout":
@@ -164,6 +176,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			json.Unmarshal(data, &m)
 			logout(m.Session)
 		default:
+			w.WriteHeader(500) //404 Bad Request
 			w.Write(jsonify(&ErrorMessage{"error", incoming.Command, "Unknown command: " + incoming.Command}))
 		}
 
@@ -209,6 +222,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func static(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
 	factory = fact
 	addr = address
@@ -217,6 +234,7 @@ func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
 	guestCommands = hm.Access.GuestCommands
 	defaultBBS = fact()
 	http.HandleFunc("/", index)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc(path, handle)
 	fmt.Printf("Starting server %s at %s%s\n", hm.Name, addr, path)
 	http.ListenAndServe(addr, nil)
