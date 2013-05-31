@@ -10,11 +10,11 @@ This project is a simple server that speaks BBS. It also contains a tiny command
 Some nice documentation is under construction as well.
 
 #### Software supporting BBS
-* Relay, a gateway server for ETI and 4chan, and more soon: https://github.com/tiko-chan/relay
+* Relay, a gateway server for ETI and 4chan, and more soon: https://github.com/guregu/relay
 
 #### Is the protocol stable?
 No, but it's getting there.
-See: https://github.com/tiko-chan/bbs/issues/1
+See: https://github.com/guregu/bbs/issues/1
 
 
 

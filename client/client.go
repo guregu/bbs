@@ -1,6 +1,6 @@
 package main
 
-import "github.com/tiko-chan/bbs"
+import "github.com/guregu/bbs"
 import "net/http"
 import "encoding/json"
 import "fmt"
