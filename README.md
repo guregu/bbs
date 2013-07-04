@@ -10,6 +10,7 @@ This project is a simple server that speaks BBS. It also contains a tiny command
 Some nice documentation is under construction as well.
 
 #### Software supporting BBS
+* limbo, standalone server software: https://github.com/guregu/limbo
 * Relay, a gateway server for ETI and 4chan, and more soon: https://github.com/guregu/relay
 
 #### Is the protocol stable?
