@@ -183,10 +183,11 @@ type TypedMessage struct {
 
 // "list" message where type = "thread" (server -> client)
 type ListMessage struct {
-	Command string           `json:"cmd"`
-	Type    string           `json:"type"`
-	Query   string           `json:"query,omitempty"`
-	Threads []*ThreadListing `json:"threads"`
+	Command   string           `json:"cmd"`
+	Type      string           `json:"type"`
+	Query     string           `json:"query,omitempty"`
+	Threads   []*ThreadListing `json:"threads"`
+	NextToken string           `json:"next,omitempty"`
 }
 
 // "list" message where type = "board" (server -> client)
@@ -211,7 +212,6 @@ type ThreadListing struct {
 	Tags         []string `json:"tags,omitempty"`   //option: "tags"
 	PictureURL   string   `json:"img,omitempty"`    //option: "imageboard"
 	ThumbnailURL string   `json:"thumb,omitempty"`  //option: "imageboard"
-	NextToken    string   `json:"next,omitempty"`
 }
 
 // format for boards in "list"
