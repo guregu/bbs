@@ -24,6 +24,7 @@ type Session struct {
 
 type BBS interface {
 	Hello() HelloMessage
+	Register(m *RegisterCommand) (*OKMessage, *ErrorMessage)
 	LogIn(m *LoginCommand) bool
 	LogOut(m *LogoutCommand) *OKMessage
 	IsLoggedIn() bool
@@ -121,6 +122,15 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			} else {
 				w.WriteHeader(401) //401 Unauthorized
 				w.Write(jsonify(&ErrorMessage{"error", "login", "Can't log in!"}))
+			}
+		case "register":
+			m := RegisterCommand{}
+			json.Unmarshal(data, &m)
+			ok, err := bbs.Register(&m)
+			if ok != nil {
+				w.Write(jsonify(ok))
+			} else {
+				w.Write(jsonify(err))
 			}
 		case "get":
 			m := GetCommand{}
@@ -240,4 +250,19 @@ func Serve(address string, path string, fact func() BBS) {
 	http.HandleFunc(path, handle)
 	log.Printf("Starting BBS %s at %s%s\n", hm.Name, addr, path)
 	http.ListenAndServe(addr, nil)
+}
+
+func Error(wrt, msg string) *ErrorMessage {
+	return &ErrorMessage{
+		Command: "error",
+		ReplyTo: wrt,
+		Error:   msg,
+	}
+}
+
+func OK(wrt string) *OKMessage {
+	return &OKMessage{
+		Command: "ok",
+		ReplyTo: wrt,
+	}
 }

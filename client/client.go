@@ -61,6 +61,13 @@ func input(line string) {
 		os.Exit(0)
 	case "exit":
 		os.Exit(0)
+	case "register":
+		if len(fields) == 3 {
+			doRegister(fields[1], fields[2])
+		} else {
+			fmt.Println("Input error.")
+			fmt.Println("usage: register username password")
+		}
 	case "login":
 		args := strings.SplitN(line, " ", 3)
 		if strings.Contains(args[2], " ") {
@@ -121,6 +128,15 @@ func input(line string) {
 	default:
 		fmt.Println("What?")
 	}
+}
+
+func doRegister(u, pw string) {
+	reg, _ := json.Marshal(&bbs.RegisterCommand{
+		Command:  "register",
+		Username: u,
+		Password: pw,
+	})
+	send(reg)
 }
 
 func doLogin(u, pw string) {

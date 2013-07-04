@@ -13,7 +13,7 @@ type UserCommand struct {
 	Session string `json:"session"`
 }
 
-//From start to end inclusive, starting from 1. 
+//From start to end inclusive, starting from 1.
 type Range struct {
 	Start int `json:"start"`
 	End   int `json:"end"`
@@ -47,7 +47,7 @@ type HelloMessage struct {
 	DefaultRange *Range `json:"default_range,omitempty"`
 }
 
-// guest commands are commands you can use without logging on (e.g. "list", "get") 
+// guest commands are commands you can use without logging on (e.g. "list", "get")
 // user commands require being logged in first (usually "post" and "reply")
 type AccessInfo struct {
 	GuestCommands []string `json:"guest,omitempty"`
@@ -90,6 +90,14 @@ type WelcomeMessage struct {
 type LogoutCommand struct {
 	Command string `json:"cmd"`
 	Session string `json:"session"`
+}
+
+// "register" command (client -> server)
+type RegisterCommand struct {
+	Command  string `json:"cmd"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 // "get" command (client -> server)
