@@ -23,6 +23,7 @@ type Session struct {
 }
 
 type BBS interface {
+	Hello() HelloMessage
 	LogIn(m *LoginCommand) bool
 	LogOut(m *LogoutCommand) *OKMessage
 	IsLoggedIn() bool
@@ -44,7 +45,7 @@ var guestCommands []string
 var defaultBBS BBS
 
 func tryLogin(m *LoginCommand) *Session {
-	//try to log in 
+	//try to log in
 	var board BBS
 	board = factory()
 
@@ -109,7 +110,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		}
 		switch incoming.Command {
 		case "hello":
-			w.Write(jsonify(&hello))
+			hm := bbs.Hello()
+			w.Write(jsonify(&hm))
 		case "login":
 			m := LoginCommand{}
 			json.Unmarshal(data, &m)
@@ -218,7 +220,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		w.Write(f)
 	} else {
-		log.Fatal(err)
+		http.NotFound(w, r)
 	}
 }
 
@@ -226,16 +228,16 @@ func static(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Serve(address string, path string, hm HelloMessage, fact func() BBS) {
+func Serve(address string, path string, fact func() BBS) {
 	factory = fact
 	addr = address
-	hello = hm
+	defaultBBS = fact()
+	hm := defaultBBS.Hello()
 	userCommands = hm.Access.UserCommands
 	guestCommands = hm.Access.GuestCommands
-	defaultBBS = fact()
 	http.HandleFunc("/", index)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc(path, handle)
-	fmt.Printf("Starting server %s at %s%s\n", hm.Name, addr, path)
+	log.Printf("Starting BBS %s at %s%s\n", hm.Name, addr, path)
 	http.ListenAndServe(addr, nil)
 }
