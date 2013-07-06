@@ -125,6 +125,15 @@ func input(line string) {
 			doReply(args[1], strings.Trim(args[2], " \n"))
 		}
 		lastLine = line
+	case "post":
+		args := strings.SplitN(line, " ", 3)
+		if len(args) < 3 {
+			fmt.Println("Input error.")
+			fmt.Println("usage: reply title text...")
+		} else {
+			doPost(args[1], strings.Trim(args[2], " \n"))
+		}
+		lastLine = line
 	default:
 		fmt.Println("What?")
 	}
@@ -160,8 +169,18 @@ func doGet(t string, r *bbs.Range, filter string) {
 }
 
 func doReply(id, text string) {
-	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, text, "html"})
+	reply, _ := json.Marshal(&bbs.ReplyCommand{"reply", session, id, text, "text"})
 	send(reply)
+}
+
+func doPost(title, text string) {
+	post, _ := json.Marshal(&bbs.PostCommand{
+		Command: "post",
+		Session: session,
+		Title:   title,
+		Text:    text,
+		Format:  "text"})
+	send(post)
 }
 
 func getURL(url string) string {
