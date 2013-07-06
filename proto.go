@@ -141,17 +141,18 @@ type PostCommand struct {
 
 // "msg" message (server -> client) [response to "get"]
 type ThreadMessage struct {
-	Command  string     `json:"cmd"`
-	ID       string     `json:"id"`
-	Title    string     `json:"title,omitempty"`
-	Range    *Range     `json:"range,omitempty"`
-	Closed   bool       `json:"closed,omitempty"`
-	Filter   string     `json:"filter,omitempty"` //option: "filter"
-	Board    string     `json:"board,omitempty"`  //option: "boards"
-	Tags     []string   `json:"tags,omitempty"`   //option: "tags"
-	Format   string     `json:"format,omitempty"`
-	Messages []*Message `json:"messages"`
-	More     bool       `json:"more,omitempty"`
+	Command   string     `json:"cmd"`
+	ID        string     `json:"id"`
+	Title     string     `json:"title,omitempty"`
+	Range     *Range     `json:"range,omitempty"`
+	Closed    bool       `json:"closed,omitempty"`
+	Filter    string     `json:"filter,omitempty"` //option: "filter"
+	Board     string     `json:"board,omitempty"`  //option: "boards"
+	Tags      []string   `json:"tags,omitempty"`   //option: "tags"
+	Format    string     `json:"format,omitempty"`
+	Messages  []*Message `json:"messages"`
+	More      bool       `json:"more,omitempty"`
+	NextToken string     `json:"next,omitempty"`
 }
 
 func (t *ThreadMessage) Size() int {
