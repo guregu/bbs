@@ -174,7 +174,7 @@ func doListBoards() {
 }
 
 func doGet(t string, r *bbs.Range, filter string) {
-	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text"})
+	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text", ""})
 	send(get)
 }
 
