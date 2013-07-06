@@ -185,6 +185,7 @@ func doGetNext(t string, n string) {
 		ThreadID:  t,
 		NextToken: n,
 	})
+	send(nxt)
 }
 
 func doReply(id, text string) {
