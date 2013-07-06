@@ -16,11 +16,17 @@ var session = ""
 var lastLine = ""
 var verbose = true
 var nextNext *next
+var listNext *listnext
 
 const client_version string = "test-client 0.1" //TODO: use this in User-Agent
 
 type next struct {
 	id    string
+	token string
+}
+
+type listnext struct {
+	query string
 	token string
 }
 
@@ -144,6 +150,10 @@ func input(line string) {
 		if nextNext != nil {
 			doGetNext(nextNext.id, nextNext.token)
 		}
+	case "listnext":
+		if listNext != nil {
+			doListNext(listNext.query, listNext.token)
+		}
 	default:
 		fmt.Println("What?")
 	}
@@ -171,6 +181,17 @@ func doList(exp string) {
 func doListBoards() {
 	list, _ := json.Marshal(&bbs.ListCommand{"list", session, "board", "", ""})
 	send(list)
+}
+
+func doListNext(query, token string) {
+	nxt, _ := json.Marshal(&bbs.ListCommand{
+		Command: "list",
+		Session: session,
+		Type:    "thread",
+		Query:   query,
+		Token:   token,
+	})
+	send(nxt)
 }
 
 func doGet(t string, r *bbs.Range, filter string) {
@@ -300,6 +321,9 @@ func onList(msg *bbs.ListMessage) {
 		newposts := " "
 		if t.UnreadPosts > 0 {
 			newposts = fmt.Sprintf(" (unread: %d) ", t.UnreadPosts)
+		}
+		if msg.NextToken != "" {
+			listNext = &listnext{msg.Query, msg.NextToken}
 		}
 		fmt.Printf("#%s [%s] %s %s | %d posts%s| %s | %s\n", t.ID, t.Author, info, t.Title, t.PostCount, newposts, t.Date, strings.Join(t.Tags, ", "))
 	}
