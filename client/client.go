@@ -15,8 +15,14 @@ var bbsServer = "http://localhost:8080/bbs"
 var session = ""
 var lastLine = ""
 var verbose = true
+var nextNext *next
 
 const client_version string = "test-client 0.1" //TODO: use this in User-Agent
+
+type next struct {
+	id    string
+	token string
+}
 
 func main() {
 	testClient()
@@ -134,6 +140,10 @@ func input(line string) {
 			doPost(args[1], strings.Trim(args[2], " \n"))
 		}
 		lastLine = line
+	case "next":
+		if nextNext != nil {
+			doGetNext(nextNext.id, nextNext.token)
+		}
 	default:
 		fmt.Println("What?")
 	}
@@ -166,6 +176,15 @@ func doListBoards() {
 func doGet(t string, r *bbs.Range, filter string) {
 	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text"})
 	send(get)
+}
+
+func doGetNext(t string, n string) {
+	nxt, _ := json.Marshal(&bbs.GetCommand{
+		Command:   "get",
+		Session:   session,
+		ThreadID:  t,
+		NextToken: n,
+	})
 }
 
 func doReply(id, text string) {
@@ -260,6 +279,9 @@ func onMsg(msg *bbs.ThreadMessage) {
 	for _, m := range msg.Messages {
 		fmt.Printf("#%s User: %s | Date: %s | UserID: %s \n", m.ID, m.Author, m.Date, m.AuthorID)
 		fmt.Println(m.Text + "\n")
+	}
+	if msg.More {
+		nextNext = &next{msg.ID, msg.NextToken}
 	}
 }
 
