@@ -82,6 +82,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		//Display info
 		index(w, r)
 	case "POST":
+		w.Header().Set("Cache-Control", "no-cache")
+
 		data, _ := ioutil.ReadAll(r.Body)
 		incoming := UserCommand{}
 		err := json.Unmarshal(data, &incoming)
