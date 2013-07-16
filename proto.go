@@ -102,13 +102,13 @@ type RegisterCommand struct {
 
 // "get" command (client -> server)
 type GetCommand struct {
-	Command   string `json:"cmd"`
-	Session   string `json:"session,omitempty"`
-	ThreadID  string `json:"id"`
-	Range     *Range `json:"range"`            //option: "range"
-	Filter    string `json:"filter,omitempty"` //option: "filter"
-	Format    string `json:"format,omitempty"`
-	NextToken string `json:"next,omitempty"`
+	Command  string `json:"cmd"`
+	Session  string `json:"session,omitempty"`
+	ThreadID string `json:"id"`
+	Range    *Range `json:"range"`            //option: "range"
+	Filter   string `json:"filter,omitempty"` //option: "filter"
+	Format   string `json:"format,omitempty"`
+	Token    string `json:"token,omitempty"`
 }
 
 // "list" command (client -> server)
