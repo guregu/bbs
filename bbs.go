@@ -82,8 +82,13 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		//Display info
 		index(w, r)
+	case "OPTIONS":
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	case "POST":
 		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 
 		data, _ := ioutil.ReadAll(r.Body)
 		incoming := UserCommand{}
