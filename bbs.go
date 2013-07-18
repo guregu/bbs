@@ -31,6 +31,7 @@ type BBS interface {
 	Get(m *GetCommand) (*ThreadMessage, *ErrorMessage)
 	List(m *ListCommand) (*ListMessage, *ErrorMessage)
 	BoardList(m *ListCommand) (*BoardListMessage, *ErrorMessage)
+	BookmarkList(m *ListCommand) (*BookmarkListMessage, *ErrorMessage)
 	Reply(m *ReplyCommand) (*OKMessage, *ErrorMessage)
 	Post(m *PostCommand) (*OKMessage, *ErrorMessage)
 }

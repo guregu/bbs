@@ -97,7 +97,7 @@ type RegisterCommand struct {
 	Command  string `json:"cmd"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email    string `json:"email"`
+	Email    string `json:"email,omitempty"`
 }
 
 // "get" command (client -> server)
@@ -198,6 +198,18 @@ type BoardListMessage struct {
 	Type    string          `json:"type"`
 	Query   string          `json:"query,omitempty"`
 	Boards  []*BoardListing `json:"boards"`
+}
+
+type BookmarkListMessage struct {
+	Command   string      `json:"cmd"`
+	Type      string      `json:"type"`
+	Bookmarks []*Bookmark `json:"bookmarks"`
+}
+
+type Bookmark struct {
+	ID    string `json:"id,omitempty"`
+	Name  string `json:"name"`
+	Query string `json:"query"`
 }
 
 // format for threads in "list"
