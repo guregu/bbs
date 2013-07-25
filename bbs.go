@@ -5,22 +5,12 @@ import "net/http"
 import "log"
 import "encoding/json"
 import "io/ioutil"
-import "time"
-import "crypto/rand"
-import "sync"
 
 var name string
 var version int = 0
 var options []string
 var description string
 var server_version string
-
-type Session struct {
-	SessionID  string
-	UserID     string
-	BBS        BBS
-	LastAction time.Time
-}
 
 type BBS interface {
 	Hello() HelloMessage
@@ -34,50 +24,45 @@ type BBS interface {
 	BookmarkList(m *ListCommand) (*BookmarkListMessage, *ErrorMessage)
 	Reply(m *ReplyCommand) (*OKMessage, *ErrorMessage)
 	Post(m *PostCommand) (*OKMessage, *ErrorMessage)
+	//Unknown(string, interface{}) interface{}
 }
 
-var sessions = make(map[string]*Session)
-var sessionMutex = &sync.RWMutex{}
-var factory func() BBS
-var addr string = ":8080"
-var hello HelloMessage
+type Server struct {
+	HTTP *httpHandler
+	//WS   http.Handler
+	Sessions *SessionHandler
+	Name     string
 
-var userCommands []string
-var guestCommands []string
-var defaultBBS BBS
+	factory       func() BBS
+	userCommands  []string
+	guestCommands []string
+	defaultBBS    BBS
+}
 
-func tryLogin(m *LoginCommand) *Session {
-	//try to log in
-	var board BBS
-	board = factory()
-
-	if board.LogIn(m) {
-		//TODO: better session shit
-		b := make([]byte, 16)
-		_, err := rand.Read(b)
-		if err != nil {
-			return nil
-		}
-		id := fmt.Sprintf("%x", b)
-		sesh := Session{id, m.Username, board, time.Now()}
-
-		sessionMutex.Lock()
-		sessions[id] = &sesh
-		sessionMutex.Unlock()
-
-		return &sesh
+func NewServer(factory func() BBS) *Server {
+	srv := &Server{
+		factory:    factory,
+		defaultBBS: factory(),
 	}
-
-	return nil
+	srv.HTTP = &httpHandler{srv}
+	srv.Sessions = NewSessionHandler(srv)
+	hello := srv.defaultBBS.Hello()
+	srv.Name = hello.Name
+	srv.userCommands = hello.Access.UserCommands
+	srv.guestCommands = hello.Access.GuestCommands
+	return srv
 }
 
-func logout(session string) {
-	sessionMutex.Lock()
-	delete(sessions, session)
-	sessionMutex.Unlock()
+func (srv *Server) NewBBS() BBS {
+	return srv.factory()
 }
 
-func handle(w http.ResponseWriter, r *http.Request) {
+type httpHandler struct {
+	server *Server
+}
+
+func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	srv := h.server
 	switch r.Method {
 	case "GET":
 		//Display info
@@ -100,16 +85,16 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		var bbs BBS
 		var sesh *Session
 		if incoming.Session != "" {
-			sesh = getSession(incoming.Session)
+			sesh = srv.Sessions.Get(incoming.Session)
 			if sesh != nil {
 				bbs = sesh.BBS
 			} else {
-				bbs = defaultBBS
+				bbs = srv.defaultBBS
 			}
 		} else {
-			bbs = defaultBBS
+			bbs = srv.defaultBBS
 		}
-		if contains(userCommands, incoming.Command) {
+		if contains(srv.userCommands, incoming.Command) {
 			if sesh == nil {
 				// a guest tried to use a user command
 				w.WriteHeader(401) //401 Unauthorized
@@ -124,7 +109,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		case "login":
 			m := LoginCommand{}
 			json.Unmarshal(data, &m)
-			newsesh := tryLogin(&m)
+			newsesh := srv.Sessions.TryLogin(&m)
 			if newsesh != nil {
 				w.Write(jsonify(&WelcomeMessage{"welcome", newsesh.UserID, newsesh.SessionID}))
 			} else {
@@ -177,7 +162,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
-				w.WriteHeader(400) //404 Bad Request
+				w.WriteHeader(400) //400 Bad Request
 				//TODO: sometimes should be 403 Forbidden
 				w.Write(jsonify(e))
 			}
@@ -188,18 +173,17 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			if success != nil {
 				w.Write(jsonify(success))
 			} else {
-				w.WriteHeader(400) //404 Bad Request
+				w.WriteHeader(400) //400 Bad Request
 				w.Write(jsonify(e))
 			}
 		case "logout":
 			m := LogoutCommand{}
 			json.Unmarshal(data, &m)
-			logout(m.Session)
+			srv.Sessions.Logout(m.Session)
 		default:
-			w.WriteHeader(500) //404 Bad Request
+			w.WriteHeader(500) //500 internal server error
 			w.Write(jsonify(&ErrorMessage{"error", incoming.Command, "Unknown command: " + incoming.Command}))
 		}
-
 	default:
 		fmt.Println("Weird method used.")
 	}
@@ -212,17 +196,6 @@ func contains(a []string, s string) bool {
 		}
 	}
 	return false
-}
-
-func getSession(sesh string) *Session {
-	sessionMutex.RLock()
-	defer sessionMutex.RUnlock()
-	s, ok := sessions[sesh]
-	if !ok {
-		return nil
-	}
-	s.LastAction = time.Now()
-	return s
 }
 
 func jsonify(j interface{}) []byte {
@@ -242,22 +215,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func static(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func Serve(address string, path string, fact func() BBS) {
-	factory = fact
-	addr = address
-	defaultBBS = fact()
-	hm := defaultBBS.Hello()
-	userCommands = hm.Access.UserCommands
-	guestCommands = hm.Access.GuestCommands
+	srv := NewServer(fact)
 	http.HandleFunc("/", index)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc(path, handle)
-	log.Printf("Starting BBS %s at %s%s\n", hm.Name, addr, path)
-	http.ListenAndServe(addr, nil)
+	http.Handle(path, srv.HTTP)
+	hm := srv.defaultBBS.Hello()
+	log.Printf("Starting BBS %s at %s%s\n", hm.Name, address, path)
+	http.ListenAndServe(address, nil)
 }
 
 func Error(wrt, msg string) *ErrorMessage {
