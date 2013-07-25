@@ -2,6 +2,7 @@ package bbs
 
 import "sync"
 import "fmt"
+import "log"
 import "time"
 import "crypto/rand"
 
@@ -27,6 +28,35 @@ func NewSessionHandler(srv *Server) *SessionHandler {
 	}
 }
 
+func (sh *SessionHandler) Get(sesh string) *Session {
+	sh.sessionMutex.RLock()
+	defer sh.sessionMutex.RUnlock()
+	s, ok := sh.sessions[sesh]
+	if !ok {
+		return nil
+	}
+	// update last active time in a diff thread
+	go sh.Touch(sesh)
+	return s
+}
+
+func (sh *SessionHandler) Touch(sesh string) {
+	sh.sessionMutex.Lock()
+	sh.sessions[sesh].LastAction = time.Now()
+	sh.sessionMutex.Unlock()
+}
+
+func (sh *SessionHandler) Add(sesh *Session) {
+	sh.sessionMutex.Lock()
+	defer sh.sessionMutex.Unlock()
+
+	if _, exists := sh.sessions[sesh.SessionID]; exists {
+		log.Printf("Warning: replaced already-existing session %s", sesh.SessionID)
+	}
+
+	sh.sessions[sesh.SessionID] = sesh
+}
+
 func (sh *SessionHandler) TryLogin(m *LoginCommand) *Session {
 	//try to log in
 	var board BBS
@@ -45,9 +75,7 @@ func (sh *SessionHandler) TryLogin(m *LoginCommand) *Session {
 			BBS:        board,
 			LastAction: time.Now(),
 		}
-		sh.sessionMutex.Lock()
-		sh.sessions[id] = sesh
-		sh.sessionMutex.Unlock()
+		sh.Add(sesh)
 		return sesh
 	}
 	return nil
@@ -57,16 +85,4 @@ func (sh *SessionHandler) Logout(sesh string) {
 	sh.sessionMutex.Lock()
 	delete(sh.sessions, sesh)
 	sh.sessionMutex.Unlock()
-}
-
-func (sh *SessionHandler) Get(sesh string) *Session {
-	sh.sessionMutex.RLock()
-	defer sh.sessionMutex.RUnlock()
-	s, ok := sh.sessions[sesh]
-	if !ok {
-		return nil
-	}
-	//TODO redo everything
-	//s.LastAction = time.Now()
-	return s
 }

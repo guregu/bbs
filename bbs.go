@@ -57,6 +57,10 @@ func (srv *Server) NewBBS() BBS {
 	return srv.factory()
 }
 
+func (srv *Server) DefaultBBS() BBS {
+	return srv.defaultBBS
+}
+
 type httpHandler struct {
 	server *Server
 }
@@ -222,7 +226,10 @@ func Serve(address string, path string, fact func() BBS) {
 	http.Handle(path, srv.HTTP)
 	hm := srv.defaultBBS.Hello()
 	log.Printf("Starting BBS %s at %s%s\n", hm.Name, address, path)
-	http.ListenAndServe(address, nil)
+	err := http.ListenAndServe(address, nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func Error(wrt, msg string) *ErrorMessage {
