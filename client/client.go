@@ -201,10 +201,10 @@ func doGet(t string, r *bbs.Range, filter string) {
 
 func doGetNext(t string, n string) {
 	nxt, _ := json.Marshal(&bbs.GetCommand{
-		Command:   "get",
-		Session:   session,
-		ThreadID:  t,
-		NextToken: n,
+		Command:  "get",
+		Session:  session,
+		ThreadID: t,
+		Token:    n,
 	})
 	send(nxt)
 }
