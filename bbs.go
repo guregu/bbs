@@ -248,7 +248,7 @@ func Error(wrt, msg string) ErrorMessage {
 	}
 }
 
-func OK(wrt string) *OKMessage {
+func OK(wrt string) OKMessage {
 	return &OKMessage{
 		Command: "ok",
 		ReplyTo: wrt,
