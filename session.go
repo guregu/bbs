@@ -44,7 +44,10 @@ func (sh *SessionHandler) Get(sesh string) *Session {
 
 func (sh *SessionHandler) Touch(sesh string) {
 	sh.sessionMutex.Lock()
-	sh.sessions[sesh].LastAction = time.Now()
+	s := sh.sessions[sesh]
+	if s != nil {
+		s.LastAction = time.Now()
+	}
 	sh.sessionMutex.Unlock()
 }
 

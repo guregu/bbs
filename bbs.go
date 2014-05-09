@@ -48,6 +48,7 @@ type UnknownHandler interface {
 type Server struct {
 	Sessions *SessionHandler
 	Name     string
+	WS       http.Handler
 
 	factory       func() BBS
 	userCommands  []string
@@ -66,6 +67,7 @@ func NewServer(factory func() BBS) *Server {
 		guestCommands: hello.Access.GuestCommands,
 	}
 	srv.Sessions = NewSessionHandler(srv)
+	srv.WS = websocket.Handler(srv.ServeWebsocket)
 	return srv
 }
 

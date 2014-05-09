@@ -43,8 +43,10 @@ type HelloMessage struct {
 	Lists           []string   `json:"lists"`
 	ServerVersion   string     `json:"server"`
 	IconURL         string     `json:"icon"`
-	//for option "range"
+	// for option "range"
 	DefaultRange Range `json:"default_range,omitempty"`
+	// for option "realtime"
+	RealtimeURL string `json:"realtime"`
 }
 
 // guest commands are commands you can use without logging on (e.g. "list", "get")
