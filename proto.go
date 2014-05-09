@@ -19,11 +19,11 @@ type Range struct {
 	End   int `json:"end"`
 }
 
-func (r *Range) String() string {
+func (r Range) String() string {
 	return fmt.Sprintf("%d-%d", r.Start, r.End)
 }
 
-func (r *Range) Validate() bool {
+func (r Range) Validate() bool {
 	if r.Start > r.End {
 		return false
 	}
@@ -44,7 +44,7 @@ type HelloMessage struct {
 	ServerVersion   string     `json:"server"`
 	IconURL         string     `json:"icon"`
 	//for option "range"
-	DefaultRange *Range `json:"default_range,omitempty"`
+	DefaultRange Range `json:"default_range,omitempty"`
 }
 
 // guest commands are commands you can use without logging on (e.g. "list", "get")
@@ -62,7 +62,7 @@ type ErrorMessage struct {
 }
 
 // session expired or invalid? use this
-var SessionErrorMessage *ErrorMessage = &ErrorMessage{"error", "session", "Invalid session."}
+var SessionErrorMessage ErrorMessage = Error("session", "bad session")
 
 // "ok" message (server -> client)
 type OKMessage struct {
@@ -105,7 +105,7 @@ type GetCommand struct {
 	Command  string `json:"cmd"`
 	Session  string `json:"session,omitempty"`
 	ThreadID string `json:"id"`
-	Range    *Range `json:"range"`            //option: "range"
+	Range    Range  `json:"range"`            //option: "range"
 	Filter   string `json:"filter,omitempty"` //option: "filter"
 	Format   string `json:"format,omitempty"`
 	Token    string `json:"token,omitempty"`
@@ -142,21 +142,21 @@ type PostCommand struct {
 
 // "msg" message (server -> client) [response to "get"]
 type ThreadMessage struct {
-	Command   string     `json:"cmd"`
-	ID        string     `json:"id"`
-	Title     string     `json:"title,omitempty"`
-	Range     *Range     `json:"range,omitempty"`
-	Closed    bool       `json:"closed,omitempty"`
-	Filter    string     `json:"filter,omitempty"` //option: "filter"
-	Board     string     `json:"board,omitempty"`  //option: "boards"
-	Tags      []string   `json:"tags,omitempty"`   //option: "tags"
-	Format    string     `json:"format,omitempty"`
-	Messages  []*Message `json:"messages"`
-	More      bool       `json:"more,omitempty"`
-	NextToken string     `json:"next,omitempty"`
+	Command   string    `json:"cmd"`
+	ID        string    `json:"id"`
+	Title     string    `json:"title,omitempty"`
+	Range     Range     `json:"range,omitempty"`
+	Closed    bool      `json:"closed,omitempty"`
+	Filter    string    `json:"filter,omitempty"` //option: "filter"
+	Board     string    `json:"board,omitempty"`  //option: "boards"
+	Tags      []string  `json:"tags,omitempty"`   //option: "tags"
+	Format    string    `json:"format,omitempty"`
+	Messages  []Message `json:"messages"`
+	More      bool      `json:"more,omitempty"`
+	NextToken string    `json:"next,omitempty"`
 }
 
-func (t *ThreadMessage) Size() int {
+func (t ThreadMessage) Size() int {
 	if t.Messages != nil {
 		return len(t.Messages)
 	}
@@ -185,25 +185,25 @@ type TypedMessage struct {
 
 // "list" message where type = "thread" (server -> client)
 type ListMessage struct {
-	Command   string           `json:"cmd"`
-	Type      string           `json:"type"`
-	Query     string           `json:"query,omitempty"`
-	Threads   []*ThreadListing `json:"threads"`
-	NextToken string           `json:"next,omitempty"`
+	Command   string          `json:"cmd"`
+	Type      string          `json:"type"`
+	Query     string          `json:"query,omitempty"`
+	Threads   []ThreadListing `json:"threads"`
+	NextToken string          `json:"next,omitempty"`
 }
 
 // "list" message where type = "board" (server -> client)
 type BoardListMessage struct {
-	Command string          `json:"cmd"`
-	Type    string          `json:"type"`
-	Query   string          `json:"query,omitempty"`
-	Boards  []*BoardListing `json:"boards"`
+	Command string         `json:"cmd"`
+	Type    string         `json:"type"`
+	Query   string         `json:"query,omitempty"`
+	Boards  []BoardListing `json:"boards"`
 }
 
 type BookmarkListMessage struct {
-	Command   string      `json:"cmd"`
-	Type      string      `json:"type"`
-	Bookmarks []*Bookmark `json:"bookmarks"`
+	Command   string     `json:"cmd"`
+	Type      string     `json:"type"`
+	Bookmarks []Bookmark `json:"bookmarks"`
 }
 
 type Bookmark struct {
