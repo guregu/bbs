@@ -1,10 +1,12 @@
 package bbs
 
-import "sync"
-import "fmt"
-import "log"
-import "time"
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"fmt"
+	"log"
+	"sync"
+	"time"
+)
 
 type Session struct {
 	SessionID  string
@@ -57,7 +59,7 @@ func (sh *SessionHandler) Add(sesh *Session) {
 	sh.sessions[sesh.SessionID] = sesh
 }
 
-func (sh *SessionHandler) TryLogin(m *LoginCommand) *Session {
+func (sh *SessionHandler) TryLogin(m LoginCommand) *Session {
 	//try to log in
 	var board BBS
 	board = sh.Server.NewBBS()
