@@ -7,11 +7,12 @@ It could be used for a native forums browsing app.
 
 #### This project
 This project is a simple server that speaks BBS. It also contains a tiny command line client for testing purposes.
-Some nice documentation is under construction as well.
+Some nice documentation is under construction as well. BSD licensed.
 
 #### Software supporting BBS
 * limbo, standalone server software: https://github.com/guregu/limbo
 * Relay, a gateway server for ETI and 4chan, and more soon: https://github.com/guregu/relay
+* bbs-client, a web client aimed at mobile: https://github.com/guregu/bbs-client
 
 #### Is the protocol stable?
 No, but it's getting there.
