@@ -95,6 +95,16 @@ func (srv *Server) do(incoming BBSCommand, data []byte, sesh *Session) interface
 	case "login":
 		m := LoginCommand{}
 		json.Unmarshal(data, &m)
+		if m.Session != "" {
+			// try to re-login
+			sesh := srv.Sessions.Get(m.Session)
+			if sesh != nil {
+				return WelcomeMessage{"welcome", sesh.UserID, sesh.SessionID}
+			} else {
+				// in the future, let people supply username/password for a second try
+				return SessionErrorMessage
+			}
+		}
 		newsesh := srv.Sessions.TryLogin(m)
 		if newsesh == nil {
 			return Error("login", "Can't log in!")
@@ -149,7 +159,7 @@ func (srv *Server) do(incoming BBSCommand, data []byte, sesh *Session) interface
 		json.Unmarshal(data, &m)
 		ok, err := bbs.Reply(m)
 		if err != nil {
-			return err
+			return Error("reply", err.Error())
 		}
 		return ok
 	case "post":
@@ -157,7 +167,7 @@ func (srv *Server) do(incoming BBSCommand, data []byte, sesh *Session) interface
 		json.Unmarshal(data, &m)
 		ok, err := bbs.Post(m)
 		if err != nil {
-			return err
+			return Error("post", err.Error())
 		}
 		return ok
 	case "logout":

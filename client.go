@@ -3,7 +3,6 @@ package bbs
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"code.google.com/p/go.net/websocket"
 )
@@ -76,7 +75,6 @@ func (c *client) run() {
 		result := c.srv.do(incoming, data, c.sesh)
 		switch result := result.(type) {
 		case WelcomeMessage:
-			log.Println("Logged in websocket: %#v", result)
 			c.sesh = c.srv.Sessions.Get(result.Session)
 			if c.sesh != nil {
 				//c.sesh.BBS.Listen(c)

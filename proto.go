@@ -79,6 +79,9 @@ type LoginCommand struct {
 	Username        string `json:"username"`
 	Password        string `json:"password"`
 	ProtocolVersion int    `json:"version"`
+
+	// for "re-logins" only
+	Session string `json:"session,omitempty"`
 }
 
 // "welcome" message (server -> client)
@@ -145,7 +148,7 @@ type PostCommand struct {
 // "msg" message (server -> client) [response to "get"]
 type ThreadMessage struct {
 	Command   string    `json:"cmd"`
-	ID        string    `json:"id"`
+	ID        string    `json:"id" bson:"_id"`
 	Title     string    `json:"title,omitempty"`
 	Range     Range     `json:"range,omitempty"`
 	Closed    bool      `json:"closed,omitempty"`
