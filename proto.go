@@ -30,6 +30,10 @@ func (r Range) Validate() bool {
 	return true
 }
 
+func (r Range) Empty() bool {
+	return r.End == 0
+}
+
 // "hello" message (server -> client)
 type HelloMessage struct {
 	Command         string     `json:"cmd"`
