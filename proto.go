@@ -161,6 +161,7 @@ type ThreadMessage struct {
 	Tags      []string  `json:"tags,omitempty"`   //option: "tags"
 	Format    string    `json:"format,omitempty"`
 	Messages  []Message `json:"messages"`
+	Total     int       `json:"total,omitempty"`
 	More      bool      `json:"more,omitempty"`
 	NextToken string    `json:"next,omitempty"`
 }
