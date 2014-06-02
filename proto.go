@@ -34,6 +34,11 @@ func (r Range) Empty() bool {
 	return r.End == 0
 }
 
+// for realtime stuff
+type Listener interface {
+	Send(interface{})
+}
+
 // "hello" message (server -> client)
 type HelloMessage struct {
 	Command         string     `json:"cmd"`
@@ -220,6 +225,12 @@ type Bookmark struct {
 	ID    string `json:"id,omitempty"`
 	Name  string `json:"name"`
 	Query string `json:"query"`
+}
+
+type ListenCommand struct {
+	Command string `json:"cmd"`
+	Type    string `json:"type"`
+	ID      string `json:"id"`
 }
 
 // format for threads in "list"

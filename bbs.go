@@ -33,7 +33,11 @@ type Boards interface {
 }
 
 type Realtime interface {
-	Listen(Listener)
+	Listen(m ListenCommand) (OKMessage, error)
+	Part(m ListenCommand) (OKMessage, error)
+
+	// server stuff
+	Connect(Listener)
 	Bye()
 }
 
@@ -95,21 +99,32 @@ func (srv *Server) do(incoming BBSCommand, data []byte, sesh *Session) interface
 	case "login":
 		m := LoginCommand{}
 		json.Unmarshal(data, &m)
+		// re-logins:
 		if m.Session != "" {
-			// try to re-login
-			sesh := srv.Sessions.Get(m.Session)
-			if sesh != nil {
-				return WelcomeMessage{"welcome", sesh.UserID, sesh.SessionID}
+			found := srv.Sessions.Get(m.Session)
+			if found != nil {
+				if sesh != nil {
+					srv.Sessions.Copy(found, sesh)
+				}
+				return WelcomeMessage{"welcome", found.UserID, found.SessionID}
 			} else {
 				// in the future, let people supply username/password for a second try
 				return SessionErrorMessage
 			}
 		}
-		newsesh := srv.Sessions.TryLogin(m)
-		if newsesh == nil {
+		// normal logins:
+		if sesh != nil {
+			if ok := srv.Sessions.Upgrade(sesh, m); !ok {
+				return Error("login", "nope")
+			}
+		} else {
+			sesh = srv.Sessions.TryLogin(m)
+		}
+
+		if sesh == nil {
 			return Error("login", "Can't log in!")
 		}
-		return WelcomeMessage{"welcome", newsesh.UserID, newsesh.SessionID}
+		return WelcomeMessage{"welcome", sesh.UserID, sesh.SessionID}
 	case "register":
 		m := RegisterCommand{}
 		json.Unmarshal(data, &m)

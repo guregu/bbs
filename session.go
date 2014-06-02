@@ -67,15 +67,8 @@ func (sh *SessionHandler) TryLogin(m LoginCommand) *Session {
 	var board BBS
 	board = sh.Server.NewBBS()
 	if board.LogIn(m) {
-		//TODO: better session shit
-		b := make([]byte, 16)
-		_, err := rand.Read(b)
-		if err != nil {
-			return nil
-		}
-		id := fmt.Sprintf("%x", b)
 		sesh := &Session{
-			SessionID:  id,
+			SessionID:  sessionKey(),
 			UserID:     m.Username,
 			BBS:        board,
 			LastAction: time.Now(),
@@ -86,8 +79,37 @@ func (sh *SessionHandler) TryLogin(m LoginCommand) *Session {
 	return nil
 }
 
+func (sh *SessionHandler) Upgrade(sesh *Session, m LoginCommand) bool {
+	if sesh.BBS.LogIn(m) {
+		sesh.SessionID = sessionKey()
+		sesh.UserID = m.Username
+		sesh.LastAction = time.Now()
+
+		sh.Add(sesh)
+		return true
+	}
+	return false
+}
+
+func (sh *SessionHandler) Copy(from *Session, to *Session) {
+	to.SessionID = from.SessionID
+	to.UserID = from.UserID
+	to.BBS = from.BBS
+	to.LastAction = from.LastAction
+}
+
 func (sh *SessionHandler) Logout(sesh string) {
 	sh.sessionMutex.Lock()
 	delete(sh.sessions, sesh)
 	sh.sessionMutex.Unlock()
+}
+
+func sessionKey() string {
+	//TODO: make this better
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", b)
 }

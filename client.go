@@ -9,17 +9,12 @@ import (
 
 const sendQueueSize = 10
 
-type Listener interface {
-	Send(interface{})
-}
-
 type client struct {
 	srv    *Server
 	socket *websocket.Conn
 	sesh   *Session
 
-	updates <-chan interface{}
-	sendq   chan interface{}
+	sendq chan interface{}
 }
 
 func newClient(srv *Server, socket *websocket.Conn) *client {
@@ -27,6 +22,7 @@ func newClient(srv *Server, socket *websocket.Conn) *client {
 		srv:    srv,
 		socket: socket,
 		sendq:  make(chan interface{}, sendQueueSize),
+		sesh:   &Session{BBS: srv.NewBBS()},
 	}
 }
 
@@ -47,18 +43,15 @@ func (c *client) writer() {
 				// disconnect etc
 				return
 			}
-		case msg := <-c.updates:
-			err := websocket.JSON.Send(c.socket, msg)
-			if err != nil {
-				// disconnected etc
-				return
-			}
 		}
 	}
 }
 
 func (c *client) run() {
 	defer c.cleanup()
+	if r, ok := c.sesh.BBS.(Realtime); ok {
+		r.Connect(c)
+	}
 	for {
 		var data []byte
 		err := websocket.Message.Receive(c.socket, &data)
@@ -73,13 +66,12 @@ func (c *client) run() {
 			continue
 		}
 		result := c.srv.do(incoming, data, c.sesh)
-		switch result := result.(type) {
-		case WelcomeMessage:
-			c.sesh = c.srv.Sessions.Get(result.Session)
-			if c.sesh != nil {
-				//c.sesh.BBS.Listen(c)
+		/*
+			switch result := result.(type) {
+			case WelcomeMessage:
+
 			}
-		}
+		*/
 		c.Send(result)
 	}
 }
@@ -89,8 +81,8 @@ func (c *client) cleanup() {
 	c.socket.Close()
 	close(c.sendq)
 	if c.sesh != nil {
-		if b, ok := c.sesh.BBS.(Realtime); ok {
-			b.Bye()
+		if r, ok := c.sesh.BBS.(Realtime); ok {
+			r.Bye()
 		}
 	}
 }
