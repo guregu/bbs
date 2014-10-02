@@ -104,11 +104,11 @@ func input(line string) {
 		lastLine = line
 	case "get":
 		if len(fields) == 2 {
-			doGet(fields[1], &bbs.Range{1, 50}, "")
+			doGet(fields[1], bbs.Range{1, 50}, "")
 		} else if len(fields) == 4 {
 			lwr, _ := strconv.Atoi(fields[2])
 			hrr, _ := strconv.Atoi(fields[3])
-			doGet(fields[1], &bbs.Range{lwr, hrr}, "")
+			doGet(fields[1], bbs.Range{lwr, hrr}, "")
 		} else {
 			fmt.Println("Input error.")
 			fmt.Println("usage: get topicID [lower upper filter]")
@@ -141,7 +141,7 @@ func input(line string) {
 		args := strings.SplitN(line, " ", 3)
 		if len(args) < 3 {
 			fmt.Println("Input error.")
-			fmt.Println("usage: reply title text...")
+			fmt.Println("usage: post title text...")
 		} else {
 			doPost(args[1], strings.Trim(args[2], " \n"))
 		}
@@ -169,7 +169,7 @@ func doRegister(u, pw string) {
 }
 
 func doLogin(u, pw string) {
-	login, _ := json.Marshal(&bbs.LoginCommand{"login", u, pw, 0})
+	login, _ := json.Marshal(&bbs.LoginCommand{"login", u, pw, 0, ""})
 	send(login)
 }
 
@@ -194,7 +194,7 @@ func doListNext(query, token string) {
 	send(nxt)
 }
 
-func doGet(t string, r *bbs.Range, filter string) {
+func doGet(t string, r bbs.Range, filter string) {
 	get, _ := json.Marshal(&bbs.GetCommand{"get", session, t, r, filter, "text", ""})
 	send(get)
 }
